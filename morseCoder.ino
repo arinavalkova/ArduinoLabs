@@ -100,31 +100,18 @@ void loop() {
     if (currentReadPos == MAX_INPUT_BUF_SIZE) {
       currentReadPos = 0;
     }
-    currentProcessedLetterFlag = 1;
-    currentBufSize--;
-  }
-  
-  if (currentProcessedLetterFlag != 0) {
-    if (!startProcessCodeDigitsFlag) {
-      currentCountCodeDigits = getCountOfMorseDigits(currentProcessedLetter);
-      startProcessCodeDigitsFlag = 1;
-    }
     
-    if (timeForNewWork) {
-        currentDigit = getCurrentCodeDigit(currentProcessCodeDigitsPos, currentCountCodeDigits);
-    	if (currentDigit == -1) {
-      		currentProcessedLetterFlag = 0;
-      		startProcessCodeDigitsFlag = 0;
-      		currentProcessCodeDigitsPos = 0;
-      		currentCountCodeDigits = 0;
-        } else if (currentDigit == 0) {
+    currentCountCodeDigits = getCountOfMorseDigits(currentProcessedLetter);
+    
+    for (char i = 0; i < currentCountCodeDigits; i++) {
+        currentDigit = getCurrentCodeDigit(i);
+    	if (currentDigit == 0) {
           
         } else if (currentDigit == 1) {
           
         }
-    } else {
-      //time work
-    }
+    currentBufSize--;
+  }
     
      //for (int j = 0; j < BITS_SIZE; j++) {
        // if (currentProcessedLetter & 0x80) {
