@@ -1,3 +1,3 @@
 # ArduinoLabs
 * Microwave oven
-![](microwaveOven.PNG)
+![](MicrowaveOven.PNG)
