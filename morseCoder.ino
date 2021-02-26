@@ -73,6 +73,13 @@ char currentProcessedLetter;
 char currentProcessedLetterFlag = 0;
 char firstLoop = 1;
 
+char currentCountCodeDigits;
+char startProcessCodeDigitsFlag = 0;
+char currentProcessCodeDigitsPos = 0;
+char currentDigit;
+
+char timeForNewWork = 1;
+
 void setup() {
   Serial.begin(9600);
 }
@@ -98,16 +105,37 @@ void loop() {
   }
   
   if (currentProcessedLetterFlag != 0) {
-     for (int j = 0; j < BITS_SIZE; j++) {
-        if (currentProcessedLetter & 0x80) {
-            Serial.print("1");
-        } else {
-            Serial.print("0");
-        }
-        currentProcessedLetter = currentProcessedLetter << 1;
+    if (!startProcessCodeDigitsFlag) {
+      currentCountCodeDigits = getCountOfMorseDigits(currentProcessedLetter);
+      startProcessCodeDigitsFlag = 1;
     }
-    Serial.println();
-    currentProcessedLetterFlag = 0;
+    
+    if (timeForNewWork) {
+        currentDigit = getCurrentCodeDigit(currentProcessCodeDigitsPos, currentCountCodeDigits);
+    	if (currentDigit == -1) {
+      		currentProcessedLetterFlag = 0;
+      		startProcessCodeDigitsFlag = 0;
+      		currentProcessCodeDigitsPos = 0;
+      		currentCountCodeDigits = 0;
+        } else if (currentDigit == 0) {
+          
+        } else if (currentDigit == 1) {
+          
+        }
+    } else {
+      //time work
+    }
+    
+     //for (int j = 0; j < BITS_SIZE; j++) {
+       // if (currentProcessedLetter & 0x80) {
+            //Serial.print("1");
+        //} else {
+            //Serial.print("0");
+        //}
+        //currentProcessedLetter = currentProcessedLetter << 1;
+    //}
+    //Serial.println();
+    //currentProcessedLetterFlag = 0;
     //когда закончим работу с символом то сменить флаг
   }
   
