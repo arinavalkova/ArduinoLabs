@@ -12,6 +12,7 @@ volatile char posAdd = 0, posRead = 0, countInBuff = 0;
 
 volatile unsigned long timePrev = 0;
 volatile SignalState signalState = OFF;
+volatile char startButtonHandler = 1;
 
 struct tree {
     char symbol;
@@ -77,8 +78,6 @@ void goRight() {
     }
 }
 
-//нужно подождать какое то время вначале
-
 char getSymbol() {
     char symbol;
     if (currentNode != NULL) {
@@ -130,7 +129,10 @@ bool isBufferEmpty() {
 
 void buttonHandler() {
     unsigned long currentTime = millis();
-    if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER //in 1 on .
+  	if (startButtonHandler) {
+      	startButtonHandler = 0;
+      	signalState = ON;
+  	} else if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER //in 1 on .
         && currentTime - timePrev >= 0
         && signalState == ON) {
         signalState = OFF;
@@ -154,8 +156,6 @@ void buttonHandler() {
         signalState = ON;
         addToBuffer(getSymbol());
         addToBuffer(' ');
-    } else {
-        signalState = ON;
     }
     timePrev = currentTime;
 }
