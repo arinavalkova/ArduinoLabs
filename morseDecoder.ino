@@ -1,9 +1,17 @@
 #define BUFF_SIZE 128
+#define TIME_STATE 300
+#define TIME_SCATTER 300
+
+enum SignalState { //зажата кнопка или отпущена
+  ON,
+  OFF
+};
 
 volatile char buffer[BUFF_SIZE];
 volatile char posAdd = 0, posRead = 0, countInBuff = 0;
-volatile char bounceProtection = 0;
+
 volatile unsigned long timePrev = 0;
+volatile SignalState signalState = OFF;
 
 void addToBuffer(char simbol) {
   cli();
@@ -40,15 +48,40 @@ bool isBufferEmpty() {
 }
 
 void buttonHandler() {
-  if (millis() - timePrev >= 200) {
-    bounceProtection = 0;
-    timePrev = millis();
+  unsigned long currentTime = millis();
+  if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER //in 1 on .
+      && currentTime - timePrev >= TIME_STATE - TIME_SCATTER
+      && signalState == ON) {
+    signalState = OFF;
+    addToBuffer('.');
+  } else if (currentTime - timePrev >= 3 * TIME_STATE - TIME_SCATTER
+             && signalState == ON) { // >=3 on -
+    signalState = OFF;
+    addToBuffer('-');
+  } else if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER
+      		&& currentTime - timePrev >= TIME_STATE - TIME_SCATTER
+      		&& signalState == OFF){ //in 1 off
+    signalState = ON;
+  } else if (currentTime - timePrev <= 3 * TIME_STATE + TIME_SCATTER
+             && currentTime - timePrev >= 3 * TIME_STATE - TIME_SCATTER
+             && signalState == OFF) { //in 3  off a
+    signalState = ON;
+    //print simbol
+    addToBuffer('a');
+  } else if (currentTime - timePrev <= 7 * TIME_STATE + TIME_SCATTER
+             && currentTime - timePrev >= 7 * TIME_STATE - TIME_SCATTER
+             && signalState == OFF) { // in 7 off probel
+    signalState = ON;
+    //print simbol
+    addToBuffer(' ');
+  } else {
+    signalState = ON;
   }
-  if (!bounceProtection) {
-    addToBuffer('1');
-    bounceProtection = 1;
-  }
+  timePrev = currentTime;
 }
+
+//буффер ломается
+//добавить конец сообщения
 
 void setup()
 {
