@@ -1,8 +1,8 @@
 #define BUFF_SIZE 128
-#define TIME_STATE 300
-#define TIME_SCATTER 300
+#define TIME_STATE 1000
+#define TIME_SCATTER 100
 
-enum SignalState { //зажата кнопка или отпущена
+enum SignalState { //the button is pressed and released
     ON,
     OFF
 };
@@ -131,31 +131,28 @@ bool isBufferEmpty() {
 void buttonHandler() {
     unsigned long currentTime = millis();
     if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER //in 1 on .
-        && currentTime - timePrev >= TIME_STATE - TIME_SCATTER
+        && currentTime - timePrev >= 0
         && signalState == ON) {
         signalState = OFF;
-        //goLeft();
-      Serial.println('.');
-    } else if (currentTime - timePrev >= 3 * TIME_STATE - TIME_SCATTER
+        goLeft();
+    } else if (currentTime - timePrev >= TIME_STATE + TIME_SCATTER
                && signalState == ON) { // >=3 on -
         signalState = OFF;
-        //goRight();
-      Serial.println('-');
+        goRight();
     } else if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER
-               && currentTime - timePrev >= TIME_STATE - TIME_SCATTER
+               && currentTime - timePrev >= 0
                && signalState == OFF){ //in 1 off
         signalState = ON;
     } else if (currentTime - timePrev <= 3 * TIME_STATE + TIME_SCATTER
-               && currentTime - timePrev >= 3 * TIME_STATE - TIME_SCATTER
+               && currentTime - timePrev >= TIME_STATE + TIME_SCATTER
                && signalState == OFF) { //in 3  off a
         signalState = ON;
-      Serial.println('a');
-        //addToBuffer(getSymbol());
+        addToBuffer(getSymbol());
     } else if (currentTime - timePrev <= 7 * TIME_STATE + TIME_SCATTER
-               && currentTime - timePrev >= 7 * TIME_STATE - TIME_SCATTER
+               && currentTime - timePrev >= 3 * TIME_STATE + TIME_SCATTER
                && signalState == OFF) { // in 7 off probel
         signalState = ON;
-       // addToBuffer(getSymbol());
+        addToBuffer(getSymbol());
         addToBuffer(' ');
     } else {
         signalState = ON;
