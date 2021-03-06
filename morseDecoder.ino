@@ -13,6 +13,76 @@ volatile char posAdd = 0, posRead = 0, countInBuff = 0;
 volatile unsigned long timePrev = 0;
 volatile SignalState signalState = OFF;
 
+typedef struct tree {
+    char symbol;
+    struct tree* left; //dot
+    struct tree* right; //dash
+} Tree;
+
+volatile Tree* tree;
+volatile Tree* currentNode;
+
+Tree* createNode(char symbol, Tree* left, Tree* right) {
+    Tree* newNode = (Tree*) malloc (sizeof(Tree));
+    newNode->symbol = symbol;
+    newNode->left = left;
+    newNode->right = right;
+    return newNode;
+}
+
+void createMorseTree() {
+    Tree* end = createNode('*', NULL, NULL);
+    Tree* h = createNode('h', NULL, NULL);
+    Tree* v = createNode('v', NULL, NULL);
+    Tree* f = createNode('f', NULL, end);
+    Tree* l = createNode('l', NULL, NULL);
+    Tree* p = createNode('p', NULL, NULL);
+    Tree* j = createNode('j', NULL, NULL);
+    Tree* b = createNode('b', NULL, NULL);
+    Tree* x = createNode('x', NULL, NULL);
+    Tree* c = createNode('c', NULL, NULL);
+    Tree* y = createNode('y', NULL, NULL);
+    Tree* z = createNode('z', NULL, NULL);
+    Tree* q = createNode('q', NULL, NULL);
+    Tree* s = createNode('s', h, v);
+    Tree* u = createNode('u', f, NULL);
+    Tree* r = createNode('r', l, NULL);
+    Tree* w = createNode('w', p, j);
+    Tree* d = createNode('d', b, x);
+    Tree* k = createNode('k', c, y);
+    Tree* g = createNode('g', z, q);
+    Tree* o = createNode('o', NULL, NULL);
+    Tree* i = createNode('i', s, u);
+    Tree* a = createNode('a', r, w);
+    Tree* n = createNode('n', d, k);
+    Tree* m = createNode('m', g, o);
+    Tree* e = createNode('e', i, a);
+    Tree* t = createNode('t', n, m);
+    tree = createNode(' ', e, t);
+    currentNode = tree;
+}
+
+void goLeft() {
+    if (currentNode != NULL) {
+        currentNode = currentNode->left;
+    }
+}
+
+void goRight() {
+    if (currentNode != NULL) {
+        currentNode = currentNode->right;
+      if (currentNode->symbol == '*') {
+        currentNode = tree;
+      }
+    }
+}
+
+char getSymbol() {
+    char symbol = currentNode->symbol;
+    currentNode = tree;
+    return symbol;
+}
+
 void addToBuffer(char simbol) {
   cli();
   buffer[posAdd] = simbol;
@@ -57,11 +127,11 @@ void buttonHandler() {
       && currentTime - timePrev >= TIME_STATE - TIME_SCATTER
       && signalState == ON) {
     signalState = OFF;
-    addToBuffer('.');
+    goLeft();
   } else if (currentTime - timePrev >= 3 * TIME_STATE - TIME_SCATTER
              && signalState == ON) { // >=3 on -
     signalState = OFF;
-    addToBuffer('-');
+    goRight();
   } else if (currentTime - timePrev <= TIME_STATE + TIME_SCATTER
       		&& currentTime - timePrev >= TIME_STATE - TIME_SCATTER
       		&& signalState == OFF){ //in 1 off
@@ -70,13 +140,12 @@ void buttonHandler() {
              && currentTime - timePrev >= 3 * TIME_STATE - TIME_SCATTER
              && signalState == OFF) { //in 3  off a
     signalState = ON;
-    //print simbol
-    addToBuffer('a');
+    addToBuffer(getSymbol());
   } else if (currentTime - timePrev <= 7 * TIME_STATE + TIME_SCATTER
              && currentTime - timePrev >= 7 * TIME_STATE - TIME_SCATTER
              && signalState == OFF) { // in 7 off probel
     signalState = ON;
-    //print simbol
+    addToBuffer(getSymbol());
     addToBuffer(' ');
   } else {
     signalState = ON;
@@ -84,15 +153,11 @@ void buttonHandler() {
   timePrev = currentTime;
 }
 
-bool checkEndSimbolInTree() {
-  return false;
-  //TO DO
-}
-
 void setup()
 {
   attachInterrupt(digitalPinToInterrupt(2), buttonHandler, CHANGE);
   Serial.begin(9600);
+  createMorseTree();
 }
 
 void loop()
@@ -103,7 +168,7 @@ void loop()
       break;
     } else {
       char getFromBufferRes = popFromBuffer();
-      Serial.println(getFromBufferRes);
+      Serial.print(getFromBufferRes);
     }
   }
 }
