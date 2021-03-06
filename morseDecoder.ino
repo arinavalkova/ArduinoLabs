@@ -28,7 +28,11 @@ void addToBuffer(char simbol) {
 char popFromBuffer() {
   cli();
   char simbol = buffer[posRead];
-  posRead++;
+  if (posRead + 1 == BUFF_SIZE) {
+    posRead = 0;
+  } else {
+    posRead++;
+  }
   countInBuff--;
   sei();
   return simbol;
@@ -80,8 +84,10 @@ void buttonHandler() {
   timePrev = currentTime;
 }
 
-//буффер ломается
-//добавить конец сообщения
+bool checkEndSimbolInTree() {
+  return false;
+  //TO DO
+}
 
 void setup()
 {
